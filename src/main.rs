@@ -2,6 +2,7 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
+use sdl2::render::{Canvas, RenderTarget};
 use sdl2::EventPump;
 use std::time::Duration;
 
@@ -24,38 +25,56 @@ fn process_input(
                 keycode: Some(Keycode::Up),
                 ..
             } => {
-                if let Some(mut player_entity) = state.entities.get_mut(player_id) {
-                    player_entity.pos[1] += -4;
+                if let Some(mut player) = state.entities.get_mut(player_id) {
+                    player.pos[1] += -4;
                 }
             }
             Event::KeyDown {
                 keycode: Some(Keycode::Down),
                 ..
             } => {
-                if let Some(mut player_entity) = state.entities.get_mut(player_id) {
-                    player_entity.pos[1] += 4;
+                if let Some(mut player) = state.entities.get_mut(player_id) {
+                    player.pos[1] += 4;
                 }
             }
             Event::KeyDown {
                 keycode: Some(Keycode::Left),
                 ..
             } => {
-                if let Some(mut player_entity) = state.entities.get_mut(player_id) {
-                    player_entity.pos[0] += -4;
+                if let Some(mut player) = state.entities.get_mut(player_id) {
+                    player.pos[0] += -4;
                 }
             }
             Event::KeyDown {
                 keycode: Some(Keycode::Right),
                 ..
             } => {
-                if let Some(mut player_entity) = state.entities.get_mut(player_id) {
-                    player_entity.pos[0] += 4;
+                if let Some(mut player) = state.entities.get_mut(player_id) {
+                    player.pos[0] += 4;
                 }
             }
             _ => {}
         }
     }
     Ok(false) // don't quit
+}
+
+fn render<T: RenderTarget>(canvas: &mut Canvas<T>, state: &State, frame_number: u64) -> Result<(), Error> {
+    let i = (frame_number & 0xFF) as u8;
+    canvas.set_draw_color(Color::RGB(i, 64, 255 - i));
+    canvas.clear();
+
+    canvas.set_draw_color(Color::RGB(0, 0, 0));
+    for entity in state.entities.values() {
+        canvas.fill_rect(Rect::new(
+            entity.pos[0],
+            entity.pos[1],
+            entity.size[0],
+            entity.size[1],
+        ))?;
+    }
+
+    Ok(())
 }
 
 fn main() -> Result<(), Error> {
@@ -79,28 +98,18 @@ fn main() -> Result<(), Error> {
     canvas.clear();
     canvas.present();
     let mut event_pump = sdl_context.event_pump()?;
-    let mut i = 0;
+    let mut frame_number = 0;
     loop {
-        i = (i + 1) % 255;
-        canvas.set_draw_color(Color::RGB(i, 64, 255 - i));
-        canvas.clear();
-
         if process_input(&mut event_pump, &mut state, player_id)? {
             break;
         }
 
-        canvas.set_draw_color(Color::RGB(0, 0, 0));
-        for entity in state.entities.values() {
-            canvas.fill_rect(Rect::new(
-                entity.pos[0],
-                entity.pos[1],
-                entity.size[0],
-                entity.size[1],
-            ))?;
-        }
+        render(&mut canvas, &state, frame_number)?;
 
         canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+
+        frame_number += 1;
     }
     Ok(())
 }
