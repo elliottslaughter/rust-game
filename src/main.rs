@@ -74,7 +74,11 @@ fn process_collisions(state: &mut State, player_id: EntityId) {
     }
 }
 
-fn render<T: RenderTarget>(canvas: &mut Canvas<T>, state: &State, frame_number: u64) -> Result<(), Error> {
+fn render<T: RenderTarget>(
+    canvas: &mut Canvas<T>,
+    state: &State,
+    frame_number: u64,
+) -> Result<(), Error> {
     let i = (frame_number & 0xFF) as u8;
     canvas.set_draw_color(Color::RGB(i, 64, 255 - i));
     canvas.clear();
