@@ -25,38 +25,53 @@ fn process_input(
                 keycode: Some(Keycode::Up),
                 ..
             } => {
-                if let Some(mut player) = state.entities.get_mut(player_id) {
-                    player.pos[1] += -4;
+                if let Some(player) = state.entities.get_mut(player_id) {
+                    player.hitbox.set_y(player.hitbox.y() - 4);
                 }
             }
             Event::KeyDown {
                 keycode: Some(Keycode::Down),
                 ..
             } => {
-                if let Some(mut player) = state.entities.get_mut(player_id) {
-                    player.pos[1] += 4;
+                if let Some(player) = state.entities.get_mut(player_id) {
+                    player.hitbox.set_y(player.hitbox.y() + 4);
                 }
             }
             Event::KeyDown {
                 keycode: Some(Keycode::Left),
                 ..
             } => {
-                if let Some(mut player) = state.entities.get_mut(player_id) {
-                    player.pos[0] += -4;
+                if let Some(player) = state.entities.get_mut(player_id) {
+                    player.hitbox.set_x(player.hitbox.x() - 4);
                 }
             }
             Event::KeyDown {
                 keycode: Some(Keycode::Right),
                 ..
             } => {
-                if let Some(mut player) = state.entities.get_mut(player_id) {
-                    player.pos[0] += 4;
+                if let Some(player) = state.entities.get_mut(player_id) {
+                    player.hitbox.set_x(player.hitbox.x() + 4);
                 }
             }
             _ => {}
         }
     }
     Ok(false) // don't quit
+}
+
+fn process_collisions(state: &mut State, player_id: EntityId) {
+    if let Some(&player) = state.entities.get(player_id) {
+        let mut dead = false;
+        for (id, entity) in state.entities.iter() {
+            dead = id != player_id && entity.hitbox.has_intersection(player.hitbox);
+            if dead {
+                break;
+            }
+        }
+        if dead {
+            state.entities.remove(player_id);
+        }
+    }
 }
 
 fn render<T: RenderTarget>(canvas: &mut Canvas<T>, state: &State, frame_number: u64) -> Result<(), Error> {
@@ -66,12 +81,7 @@ fn render<T: RenderTarget>(canvas: &mut Canvas<T>, state: &State, frame_number: 
 
     canvas.set_draw_color(Color::RGB(0, 0, 0));
     for entity in state.entities.values() {
-        canvas.fill_rect(Rect::new(
-            entity.pos[0],
-            entity.pos[1],
-            entity.size[0],
-            entity.size[1],
-        ))?;
+        canvas.fill_rect(entity.hitbox)?;
     }
 
     Ok(())
@@ -90,8 +100,21 @@ fn main() -> Result<(), Error> {
 
     let mut state = State::default();
     let player_id = state.entities.insert(Entity {
-        pos: [400, 300],
-        size: [32, 32],
+        hitbox: Rect::new(400, 300, 32, 32),
+    });
+
+    // Add monsters.
+    state.entities.insert(Entity {
+        hitbox: Rect::new(300, 200, 32, 32),
+    });
+    state.entities.insert(Entity {
+        hitbox: Rect::new(500, 200, 32, 32),
+    });
+    state.entities.insert(Entity {
+        hitbox: Rect::new(300, 400, 32, 32),
+    });
+    state.entities.insert(Entity {
+        hitbox: Rect::new(500, 400, 32, 32),
     });
 
     canvas.set_draw_color(Color::RGB(0, 255, 255));
@@ -103,6 +126,8 @@ fn main() -> Result<(), Error> {
         if process_input(&mut event_pump, &mut state, player_id)? {
             break;
         }
+
+        process_collisions(&mut state, player_id);
 
         render(&mut canvas, &state, frame_number)?;
 

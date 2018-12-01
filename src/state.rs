@@ -2,8 +2,7 @@ pub type EntityId = slotmap::DefaultKey;
 
 #[derive(Copy, Clone)]
 pub struct Entity {
-    pub pos: [i32; 2],
-    pub size: [u32; 2],
+    pub hitbox: sdl2::rect::Rect,
 }
 
 #[derive(Default)]
