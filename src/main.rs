@@ -1,9 +1,11 @@
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
+use sdl2::rect::Rect;
 use std::time::Duration;
 
 use game::error::Error;
+use game::state::{Entity, State};
 
 fn main() -> Result<(), Error> {
     let sdl_context = sdl2::init()?;
@@ -15,6 +17,12 @@ fn main() -> Result<(), Error> {
         .build()?;
 
     let mut canvas = window.into_canvas().build()?;
+
+    let mut state = State::default();
+    let player_id = state.entities.insert(Entity {
+        pos: [400, 300],
+        size: [32, 32],
+    });
 
     canvas.set_draw_color(Color::RGB(0, 255, 255));
     canvas.clear();
@@ -32,8 +40,50 @@ fn main() -> Result<(), Error> {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => break 'running,
+                Event::KeyDown {
+                    keycode: Some(Keycode::Up),
+                    ..
+                } => {
+                    if let Some(mut player_entity) = state.entities.get_mut(player_id) {
+                        player_entity.pos[1] += -4;
+                    }
+                }
+                Event::KeyDown {
+                    keycode: Some(Keycode::Down),
+                    ..
+                } => {
+                    if let Some(mut player_entity) = state.entities.get_mut(player_id) {
+                        player_entity.pos[1] += 4;
+                    }
+                }
+                Event::KeyDown {
+                    keycode: Some(Keycode::Left),
+                    ..
+                } => {
+                    if let Some(mut player_entity) = state.entities.get_mut(player_id) {
+                        player_entity.pos[0] += -4;
+                    }
+                }
+                Event::KeyDown {
+                    keycode: Some(Keycode::Right),
+                    ..
+                } => {
+                    if let Some(mut player_entity) = state.entities.get_mut(player_id) {
+                        player_entity.pos[0] += 4;
+                    }
+                }
                 _ => {}
             }
+        }
+
+        canvas.set_draw_color(Color::RGB(0, 0, 0));
+        for entity in state.entities.values() {
+            canvas.fill_rect(Rect::new(
+                entity.pos[0],
+                entity.pos[1],
+                entity.size[0],
+                entity.size[1],
+            ))?;
         }
 
         canvas.present();
