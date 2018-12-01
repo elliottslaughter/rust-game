@@ -3,30 +3,7 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use std::time::Duration;
 
-#[derive(Debug)]
-enum Error {
-    SdlError(String),
-    WindowError(sdl2::video::WindowBuildError),
-    CanvasError(sdl2::IntegerOrSdlError),
-}
-
-impl From<String> for Error {
-    fn from(error: String) -> Error {
-        Error::SdlError(error)
-    }
-}
-
-impl From<sdl2::video::WindowBuildError> for Error {
-    fn from(error: sdl2::video::WindowBuildError) -> Error {
-        Error::WindowError(error)
-    }
-}
-
-impl From<sdl2::IntegerOrSdlError> for Error {
-    fn from(error: sdl2::IntegerOrSdlError) -> Error {
-        Error::CanvasError(error)
-    }
-}
+use game::error::Error;
 
 fn main() -> Result<(), Error> {
     let sdl_context = sdl2::init()?;
