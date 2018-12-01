@@ -1,0 +1,11 @@
+[package]
+name = "game"
+version = "0.1.0"
+authors = ["Elliott Slaughter <elliottslaughter@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+
+[dependencies.sdl2]
+version = "0.32.0-beta.2"
+features = ["bundled"]
