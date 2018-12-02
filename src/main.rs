@@ -1,6 +1,8 @@
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::{Canvas, RenderTarget};
+use sdl2::video::Window;
+use std::cmp::{min, max};
 use std::time::Duration;
 
 use game::control::{process_input, Control};
@@ -11,10 +13,21 @@ fn process_action(
     state: &mut State,
     player_id: EntityId,
     control: &Control,
+    window: &Window,
 ) {
     if let Some(player) = state.entities.get_mut(player_id) {
-        player.hitbox.set_x(player.hitbox.x() + control.left_right_input as i32);
-        player.hitbox.set_y(player.hitbox.y() + control.up_down_input as i32);
+        player.hitbox.set_x(
+            min(
+                max(
+                    player.hitbox.x() + control.left_right_input as i32,
+                    0i32),
+                (window.size().0 - player.hitbox.size().0) as i32));
+        player.hitbox.set_y(
+            min(
+                max(
+                    player.hitbox.y() + control.up_down_input as i32,
+                    0i32),
+                (window.size().1 - player.hitbox.size().1) as i32));
     }
 }
 
@@ -36,13 +49,11 @@ fn process_collisions(state: &mut State, player_id: EntityId) {
 fn render<T: RenderTarget>(
     canvas: &mut Canvas<T>,
     state: &State,
-    frame_number: u64,
 ) -> Result<(), Error> {
-    let i = (frame_number & 0xFF) as u8;
-    canvas.set_draw_color(Color::RGB(i, 64, 255 - i));
+    canvas.set_draw_color(Color::RGB(0, 0, 0));
     canvas.clear();
 
-    canvas.set_draw_color(Color::RGB(0, 0, 0));
+    canvas.set_draw_color(Color::RGB(255, 255, 255));
     for entity in state.entities.values() {
         canvas.fill_rect(entity.hitbox)?;
     }
@@ -80,11 +91,10 @@ fn main() -> Result<(), Error> {
         hitbox: Rect::new(500, 400, 32, 32),
     });
 
-    canvas.set_draw_color(Color::RGB(0, 255, 255));
+    canvas.set_draw_color(Color::RGB(0, 0, 0));
     canvas.clear();
     canvas.present();
     let mut event_pump = sdl_context.event_pump()?;
-    let mut frame_number = 0;
     let mut control = Control::default();
     loop {
         control = process_input(&mut event_pump, control)?;
@@ -92,16 +102,14 @@ fn main() -> Result<(), Error> {
             break;
         }
 
-        process_action(&mut state, player_id, &control);
+        process_action(&mut state, player_id, &control, canvas.window());
 
         process_collisions(&mut state, player_id);
 
-        render(&mut canvas, &state, frame_number)?;
+        render(&mut canvas, &state)?;
 
         canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
-
-        frame_number += 1;
     }
     Ok(())
 }
