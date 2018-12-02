@@ -14,10 +14,12 @@ pub struct Control {
     left_pressed: bool,
     right_pressed: bool,
 
-    // Track the current control state for opposing direction keys,
-    // i.e. +1/0/-1 for up/no input/down or left/no input/right.
-    pub up_down_input: i8,
-    pub left_right_input: i8,
+    // Track the current control state for opposing direction keys.
+    pub up_down_input: i8, // +1/0/-1 for up/no input/down
+    pub left_right_input: i8, // +1/0/-1 for left/no input/right
+
+    // Track the current facing direction.
+    pub facing_input: i8, // 0/1/2/3 for up/left/down/right
 
     // Track whether a quit has been requested.
     pub quit_input: bool,
@@ -39,24 +41,36 @@ pub fn process_input(event_pump: &mut EventPump, control: &mut Control) -> Resul
                 Keycode::Up => {
                     if !control.up_pressed {
                         control.up_down_input = -1;
+                        if control.left_right_input == 0 {
+                            control.facing_input = 0;
+                        }
                     }
                     control.up_pressed = true;
                 }
                 Keycode::Down => {
                     if !control.down_pressed {
                         control.up_down_input = 1;
+                        if control.left_right_input == 0 {
+                            control.facing_input = 2;
+                        }
                     }
                     control.down_pressed = true;
                 }
                 Keycode::Left => {
                     if !control.left_pressed {
                         control.left_right_input = -1;
+                        if control.up_down_input == 0 {
+                            control.facing_input = 1;
+                        }
                     }
                     control.left_pressed = true;
                 }
                 Keycode::Right => {
                     if !control.right_pressed {
                         control.left_right_input = 1;
+                        if control.up_down_input == 0 {
+                            control.facing_input = 3;
+                        }
                     }
                     control.right_pressed = true;
                 }

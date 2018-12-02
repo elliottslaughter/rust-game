@@ -19,6 +19,7 @@ fn process_action(state: &mut State, player_id: EntityId, control: &Control, win
             max(player.hitbox.y() + control.up_down_input as i32, 0i32),
             (window.size().1 - player.hitbox.size().1) as i32,
         ));
+        player.facing_direction = control.facing_input;
     }
 }
 
@@ -47,6 +48,18 @@ fn render<T: RenderTarget>(canvas: &mut Canvas<T>, state: &State) -> Result<(), 
             EntityKind::Monster => canvas.set_draw_color(Color::RGB(255, 0, 0)),
         }
         canvas.fill_rect(entity.hitbox)?;
+        if entity.kind == EntityKind::Player {
+            canvas.set_draw_color(Color::RGB(0, 255, 0));
+            let w = 4;
+            let top_edge = match entity.facing_direction {
+                0 => Rect::new(entity.hitbox.x(), entity.hitbox.y(), entity.hitbox.width(), w as u32),
+                1 => Rect::new(entity.hitbox.x(), entity.hitbox.y(), w as u32, entity.hitbox.height()),
+                2 => Rect::new(entity.hitbox.x(), entity.hitbox.y() + (entity.hitbox.height() as i32) - w, entity.hitbox.width(), w as u32),
+                3 => Rect::new(entity.hitbox.x() + (entity.hitbox.width() as i32) - w, entity.hitbox.y(), w as u32, entity.hitbox.height()),
+                _ => Rect::new(0, 0, 0, 0),
+            };
+            canvas.fill_rect(top_edge)?;
+        }
     }
 
     Ok(())
@@ -67,24 +80,29 @@ fn main() -> Result<(), Error> {
     let player_id = state.entities.insert(Entity {
         hitbox: Rect::new(400, 300, 32, 32),
         kind: EntityKind::Player,
+        facing_direction: 0,
     });
 
     // Add monsters.
     state.entities.insert(Entity {
         hitbox: Rect::new(300, 200, 32, 32),
         kind: EntityKind::Monster,
+        facing_direction: 0,
     });
     state.entities.insert(Entity {
         hitbox: Rect::new(500, 200, 32, 32),
         kind: EntityKind::Monster,
+        facing_direction: 0,
     });
     state.entities.insert(Entity {
         hitbox: Rect::new(300, 400, 32, 32),
         kind: EntityKind::Monster,
+        facing_direction: 0,
     });
     state.entities.insert(Entity {
         hitbox: Rect::new(500, 400, 32, 32),
         kind: EntityKind::Monster,
+        facing_direction: 0,
     });
 
     canvas.set_draw_color(Color::RGB(0, 0, 0));
