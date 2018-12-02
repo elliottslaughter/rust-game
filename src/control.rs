@@ -23,68 +23,104 @@ pub struct Control {
     pub quit_input: bool,
 }
 
-pub fn process_input(
-    event_pump: &mut EventPump,
-    last_control: Control,
-) -> Result<Control, Error> {
+pub fn process_input(event_pump: &mut EventPump, last_control: Control) -> Result<Control, Error> {
     let mut control = last_control;
     for event in event_pump.poll_iter() {
         control = match event {
-            Event::Quit { .. } => Control { quit_input: true, ..control },
-            Event::KeyDown { keycode: Some(keycode), .. } => {
-                match keycode {
-                    Keycode::Escape => Control { quit_input: true, ..control },
-                    Keycode::Up => Control {
-                        up_pressed: true,
-                        up_down_input: if !control.up_pressed { -1 } else { control.up_down_input },
-                        ..control
+            Event::Quit { .. } => Control {
+                quit_input: true,
+                ..control
+            },
+            Event::KeyDown {
+                keycode: Some(keycode),
+                ..
+            } => match keycode {
+                Keycode::Escape => Control {
+                    quit_input: true,
+                    ..control
+                },
+                Keycode::Up => Control {
+                    up_pressed: true,
+                    up_down_input: if !control.up_pressed {
+                        -1
+                    } else {
+                        control.up_down_input
                     },
-                    Keycode::Down => Control {
-                        down_pressed: true,
-                        up_down_input: if !control.down_pressed { 1 } else { control.up_down_input },
-                        ..control
+                    ..control
+                },
+                Keycode::Down => Control {
+                    down_pressed: true,
+                    up_down_input: if !control.down_pressed {
+                        1
+                    } else {
+                        control.up_down_input
                     },
-                    Keycode::Left => Control {
-                        left_pressed: true,
-                        left_right_input: if !control.left_pressed { -1 } else { control.left_right_input },
-                        ..control
+                    ..control
+                },
+                Keycode::Left => Control {
+                    left_pressed: true,
+                    left_right_input: if !control.left_pressed {
+                        -1
+                    } else {
+                        control.left_right_input
                     },
-                    Keycode::Right => Control {
-                        right_pressed: true,
-                        left_right_input: if !control.right_pressed { 1 } else { control.left_right_input },
-                        ..control
+                    ..control
+                },
+                Keycode::Right => Control {
+                    right_pressed: true,
+                    left_right_input: if !control.right_pressed {
+                        1
+                    } else {
+                        control.left_right_input
                     },
-                    _ => control,
-                }
-            }
-            Event::KeyUp { keycode: Some(keycode), .. } => {
-                match keycode {
-                    Keycode::Up => Control {
-                        up_pressed: false,
-                        up_down_input: if control.up_down_input == -1 { 0 } else { control.up_down_input },
-                        ..control
+                    ..control
+                },
+                _ => control,
+            },
+            Event::KeyUp {
+                keycode: Some(keycode),
+                ..
+            } => match keycode {
+                Keycode::Up => Control {
+                    up_pressed: false,
+                    up_down_input: if control.up_down_input == -1 {
+                        0
+                    } else {
+                        control.up_down_input
                     },
-                    Keycode::Down => Control {
-                        down_pressed: false,
-                        up_down_input: if control.up_down_input == 1 { 0 } else { control.up_down_input },
-                        ..control
+                    ..control
+                },
+                Keycode::Down => Control {
+                    down_pressed: false,
+                    up_down_input: if control.up_down_input == 1 {
+                        0
+                    } else {
+                        control.up_down_input
                     },
-                    Keycode::Left => Control {
-                        left_pressed: false,
-                        left_right_input: if control.left_right_input == -1 { 0 } else { control.left_right_input },
-                        ..control
+                    ..control
+                },
+                Keycode::Left => Control {
+                    left_pressed: false,
+                    left_right_input: if control.left_right_input == -1 {
+                        0
+                    } else {
+                        control.left_right_input
                     },
-                    Keycode::Right => Control {
-                        right_pressed: false,
-                        left_right_input: if control.left_right_input == 1 { 0 } else { control.left_right_input },
-                        ..control
+                    ..control
+                },
+                Keycode::Right => Control {
+                    right_pressed: false,
+                    left_right_input: if control.left_right_input == 1 {
+                        0
+                    } else {
+                        control.left_right_input
                     },
-                    _ => control,
-                }
-            }
+                    ..control
+                },
+                _ => control,
+            },
             _ => control,
         };
     }
     Ok(control)
 }
-
