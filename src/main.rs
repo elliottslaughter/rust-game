@@ -1,62 +1,21 @@
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::{Canvas, RenderTarget};
-use sdl2::EventPump;
 use std::time::Duration;
 
+use game::control::{process_input, Control};
 use game::error::Error;
 use game::state::{Entity, EntityId, State};
 
-fn process_input(
-    event_pump: &mut EventPump,
+fn process_action(
     state: &mut State,
     player_id: EntityId,
-) -> Result<bool, Error> {
-    for event in event_pump.poll_iter() {
-        match event {
-            Event::Quit { .. }
-            | Event::KeyDown {
-                keycode: Some(Keycode::Escape),
-                ..
-            } => return Ok(true), // quit
-            Event::KeyDown {
-                keycode: Some(Keycode::Up),
-                ..
-            } => {
-                if let Some(player) = state.entities.get_mut(player_id) {
-                    player.hitbox.set_y(player.hitbox.y() - 4);
-                }
-            }
-            Event::KeyDown {
-                keycode: Some(Keycode::Down),
-                ..
-            } => {
-                if let Some(player) = state.entities.get_mut(player_id) {
-                    player.hitbox.set_y(player.hitbox.y() + 4);
-                }
-            }
-            Event::KeyDown {
-                keycode: Some(Keycode::Left),
-                ..
-            } => {
-                if let Some(player) = state.entities.get_mut(player_id) {
-                    player.hitbox.set_x(player.hitbox.x() - 4);
-                }
-            }
-            Event::KeyDown {
-                keycode: Some(Keycode::Right),
-                ..
-            } => {
-                if let Some(player) = state.entities.get_mut(player_id) {
-                    player.hitbox.set_x(player.hitbox.x() + 4);
-                }
-            }
-            _ => {}
-        }
+    control: &Control,
+) {
+    if let Some(player) = state.entities.get_mut(player_id) {
+        player.hitbox.set_x(player.hitbox.x() + control.left_right_input as i32);
+        player.hitbox.set_y(player.hitbox.y() + control.up_down_input as i32);
     }
-    Ok(false) // don't quit
 }
 
 fn process_collisions(state: &mut State, player_id: EntityId) {
@@ -126,10 +85,14 @@ fn main() -> Result<(), Error> {
     canvas.present();
     let mut event_pump = sdl_context.event_pump()?;
     let mut frame_number = 0;
+    let mut control = Control::default();
     loop {
-        if process_input(&mut event_pump, &mut state, player_id)? {
+        control = process_input(&mut event_pump, control)?;
+        if control.quit_input {
             break;
         }
+
+        process_action(&mut state, player_id, &control);
 
         process_collisions(&mut state, player_id);
 
