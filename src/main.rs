@@ -68,7 +68,7 @@ fn render<T: RenderTarget>(canvas: &mut Canvas<T>, state: &State) -> Result<(), 
                 3 => ((b.hi.x - w, b.lo.y), b.hi).into(),
                 _ => Rect::default(),
             };
-            canvas.fill(facing_edge.into())?;
+            canvas.fill(facing_edge)?;
 
             if entity.attack {
                 canvas.set_draw_color(Color::RGB(0, 0, 255));
@@ -80,7 +80,7 @@ fn render<T: RenderTarget>(canvas: &mut Canvas<T>, state: &State) -> Result<(), 
                     3 => ((b.hi.x, b.lo.y), (b.hi.x + u, b.hi.y)).into(),
                     _ => Rect::default(),
                 };
-                canvas.fill(facing_edge.into())?;
+                canvas.fill(facing_edge)?;
             }
         }
     }
