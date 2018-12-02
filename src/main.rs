@@ -10,7 +10,10 @@ use game::state::{Entity, EntityId, EntityKind, State};
 
 fn process_action(state: &mut State, player_id: EntityId, control: &Control, window: Rect) {
     if let Some(player) = state.entities.get_mut(player_id) {
-        let delta = Point::new(control.left_right_input as i32, control.up_down_input as i32);
+        let delta = Point::new(
+            control.left_right_input as i32,
+            control.up_down_input as i32,
+        );
         let lo = window.clamp(player.hitbox.lo + delta);
         let hi = lo + player.hitbox.size() - 1;
         player.hitbox = Rect::new(lo, hi);
@@ -144,7 +147,7 @@ fn main() -> Result<(), Error> {
             break;
         }
 
-        let size : Point = canvas.window().size().into();
+        let size: Point = canvas.window().size().into();
         let rect = ((0, 0), size - 1).into();
         process_action(&mut state, player_id, &control, rect);
 

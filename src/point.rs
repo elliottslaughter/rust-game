@@ -20,7 +20,10 @@ impl From<(i32, i32)> for Point {
 
 impl From<(u32, u32)> for Point {
     fn from(p: (u32, u32)) -> Point {
-        Point { x: p.0 as i32, y: p.1 as i32 }
+        Point {
+            x: p.0 as i32,
+            y: p.1 as i32,
+        }
     }
 }
 

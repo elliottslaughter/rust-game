@@ -31,8 +31,10 @@ impl Rect {
         (self.width(), self.height()).into()
     }
     pub fn clamp(self, p: Point) -> Point {
-        Point::new(clamp(p.x, self.lo.x, self.hi.x),
-                   clamp(p.y, self.lo.y, self.hi.y))
+        Point::new(
+            clamp(p.x, self.lo.x, self.hi.x),
+            clamp(p.y, self.lo.y, self.hi.y),
+        )
     }
     pub fn has_intersection(self, r: Rect) -> bool {
         !(self.hi.x < r.lo.x || self.hi.y < r.lo.y || r.hi.x < self.lo.x || r.hi.y < self.lo.y)
