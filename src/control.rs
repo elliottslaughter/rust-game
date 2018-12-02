@@ -15,11 +15,14 @@ pub struct Control {
     right_pressed: bool,
 
     // Track the current control state for opposing direction keys.
-    pub up_down_input: i8, // +1/0/-1 for up/no input/down
+    pub up_down_input: i8,    // +1/0/-1 for up/no input/down
     pub left_right_input: i8, // +1/0/-1 for left/no input/right
 
     // Track the current facing direction.
     pub facing_input: i8, // 0/1/2/3 for up/left/down/right
+
+    // Track the attack status.
+    pub attack_input: bool,
 
     // Track whether a quit has been requested.
     pub quit_input: bool,
@@ -74,6 +77,9 @@ pub fn process_input(event_pump: &mut EventPump, control: &mut Control) -> Resul
                     }
                     control.right_pressed = true;
                 }
+                Keycode::Space => {
+                    control.attack_input = true;
+                }
                 _ => {}
             },
             Event::KeyUp {
@@ -103,6 +109,9 @@ pub fn process_input(event_pump: &mut EventPump, control: &mut Control) -> Resul
                     if control.left_right_input == 1 {
                         control.left_right_input = 0;
                     }
+                }
+                Keycode::Space => {
+                    control.attack_input = false;
                 }
                 _ => {}
             },
