@@ -64,21 +64,16 @@ fn render<T: RenderTarget>(canvas: &mut Canvas<T>, state: &State) -> Result<(), 
             canvas.set_draw_color(Color::RGB(0, 255, 0));
             let b = entity.hitbox;
             let w = 4;
-            let facing_edge: Rect = (b.lo, (b.hi.x, b.lo.y + w)).into();
-            let facing_edge = facing_edge.rotate(b.center(), (entity.facing_direction as i32) * 90);
-            canvas.fill(facing_edge)?;
+            let face: Rect = (b.lo, (b.hi.x, b.lo.y + w)).into();
+            let face = face.rotate(b.center(), (entity.facing_direction as i32) * 90);
+            canvas.fill(face)?;
 
             if entity.attack {
                 canvas.set_draw_color(Color::RGB(0, 0, 255));
                 let u = 8;
-                let facing_edge = match entity.facing_direction {
-                    0 => ((b.lo.x, b.lo.y - u), (b.hi.x, b.lo.y - 1)).into(),
-                    1 => ((b.lo.x - u, b.lo.y), (b.lo.x - 1, b.hi.y)).into(),
-                    2 => ((b.lo.x, b.hi.y), (b.hi.x, b.hi.y + u)).into(),
-                    3 => ((b.hi.x, b.lo.y), (b.hi.x + u, b.hi.y)).into(),
-                    _ => Rect::default(),
-                };
-                canvas.fill(facing_edge)?;
+                let face: Rect = ((b.lo.x, b.lo.y - u - 1), (b.hi.x, b.lo.y - 1)).into();
+                let face = face.rotate(b.center(), (entity.facing_direction as i32) * 90);
+                canvas.fill(face)?;
             }
         }
     }

@@ -48,10 +48,14 @@ impl Rect {
 
     pub fn rotate(self, origin: Point, angle: i32 /* degrees CCW */) -> Rect {
         // Find the four corners of the rectangle.
+
+        // Important: account for inclusiveness of self.hi, otherwise
+        // coordinates will be off if one of these gets swapped into a
+        // low position. Shift back afterwards.
         let upper_left = self.lo;
-        let upper_right = (self.hi.x, self.lo.y).into();
-        let lower_left = (self.lo.x, self.hi.y).into();
-        let lower_right = self.hi;
+        let upper_right = (self.hi.x + 1, self.lo.y).into();
+        let lower_left = (self.lo.x, self.hi.y + 1).into();
+        let lower_right = self.hi + 1;
 
         // Figure out which points to rotate based on angle.
         let (lo, hi) = match angle {
@@ -62,7 +66,7 @@ impl Rect {
             _ => unimplemented!(),
         };
 
-        Rect::new(lo.rotate(origin, angle), hi.rotate(origin, angle))
+        Rect::new(lo.rotate(origin, angle), hi.rotate(origin, angle) - 1)
     }
 
     pub fn has_intersection(self, r: Rect) -> bool {
@@ -153,20 +157,37 @@ mod tests {
     #[test]
     fn rect_rotate() {
         assert_eq!(
+            Rect::new(Point::new(-1, -1), Point::new(0, 0)).rotate(Point::new(0, 0), 0),
+            Rect::new(Point::new(-1, -1), Point::new(0, 0))
+        );
+        assert_eq!(
+            Rect::new(Point::new(-1, -1), Point::new(0, 0)).rotate(Point::new(0, 0), 90),
+            Rect::new(Point::new(-1, -1), Point::new(0, 0))
+        );
+        assert_eq!(
+            Rect::new(Point::new(-1, -1), Point::new(0, 0)).rotate(Point::new(0, 0), 180),
+            Rect::new(Point::new(-1, -1), Point::new(0, 0))
+        );
+        assert_eq!(
+            Rect::new(Point::new(-1, -1), Point::new(0, 0)).rotate(Point::new(0, 0), 270),
+            Rect::new(Point::new(-1, -1), Point::new(0, 0))
+        );
+
+        assert_eq!(
             Rect::new(Point::new(-1, -1), Point::new(1, 1)).rotate(Point::new(0, 0), 0),
             Rect::new(Point::new(-1, -1), Point::new(1, 1))
         );
         assert_eq!(
             Rect::new(Point::new(-1, -1), Point::new(1, 1)).rotate(Point::new(0, 0), 90),
-            Rect::new(Point::new(-1, -1), Point::new(1, 1))
+            Rect::new(Point::new(-1, -2), Point::new(1, 0))
         );
         assert_eq!(
             Rect::new(Point::new(-1, -1), Point::new(1, 1)).rotate(Point::new(0, 0), 180),
-            Rect::new(Point::new(-1, -1), Point::new(1, 1))
+            Rect::new(Point::new(-2, -2), Point::new(0, 0))
         );
         assert_eq!(
             Rect::new(Point::new(-1, -1), Point::new(1, 1)).rotate(Point::new(0, 0), 270),
-            Rect::new(Point::new(-1, -1), Point::new(1, 1))
+            Rect::new(Point::new(-2, -1), Point::new(0, 1))
         );
 
         assert_eq!(
@@ -175,7 +196,7 @@ mod tests {
         );
         assert_eq!(
             Rect::new(Point::new(-1, -1), Point::new(2, 3)).rotate(Point::new(0, 0), 90),
-            Rect::new(Point::new(-1, -2), Point::new(3, 1))
+            Rect::new(Point::new(-1, -3), Point::new(3, 0))
         );
     }
 }
