@@ -85,7 +85,7 @@ fn main() -> Result<(), Error> {
     let mut event_pump = sdl_context.event_pump()?;
     let mut control = Control::default();
     loop {
-        control = process_input(&mut event_pump, control)?;
+        process_input(&mut event_pump, &mut control)?;
         if control.quit_input {
             break;
         }
