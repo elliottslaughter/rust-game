@@ -15,8 +15,8 @@ pub struct Control {
     right_pressed: bool,
 
     // Track the current control state for opposing direction keys.
-    pub up_down_input: i8,    // +1/0/-1 for up/no input/down
-    pub left_right_input: i8, // +1/0/-1 for left/no input/right
+    pub up_down_input: i8,    // -1/0/+1 for up/no input/down
+    pub left_right_input: i8, // -1/0/+1 for left/no input/right
 
     // Track the current facing direction.
     pub facing_input: i8, // 0/1/2/3 for up/left/down/right
