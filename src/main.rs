@@ -8,32 +8,81 @@ use game::point::Point;
 use game::rect::Rect;
 use game::state::{Entity, EntityId, EntityKind, State};
 
+static ATTACK_FRAMES: &'static [((i32, i32), (i32, i32))] = &[
+    ((12, -5), (16, -1)),
+    ((12, -6), (17, -1)),
+    ((11, -7), (17, -1)),
+    ((10, -9), (16, -2)),
+    ((8, -11), (15, -3)),
+    ((6, -12), (14, -3)),
+    ((4, -13), (13, -3)),
+    ((0, -14), (12, -3)),
+    ((-4, -14), (8, -3)),
+    ((-6, -13), (6, -3)),
+    ((-8, -12), (2, -2)),
+];
+
 fn process_action(state: &mut State, player_id: EntityId, control: &Control, window: Rect) {
     if let Some(player) = state.entities.get_mut(player_id) {
-        let delta = Point::new(
-            control.left_right_input as i32,
-            control.up_down_input as i32,
-        );
+        let delta = Point::new(control.left_right_input, control.up_down_input);
         let lo = window.clamp(player.hitbox.lo + delta);
         let hi = lo + player.hitbox.size() - 1;
         player.hitbox = Rect::new(lo, hi);
 
         player.facing_direction = control.facing_input;
-        player.attack = control.attack_input;
+        player.attack_frame = match player.attack_frame {
+            Some(frame) => {
+                if frame < ATTACK_FRAMES.len() - 1 {
+                    Some(frame + 1)
+                } else {
+                    None
+                }
+            }
+            None => {
+                if control.attack_input {
+                    Some(0)
+                } else {
+                    None
+                }
+            }
+        };
+
+        player.attack_box = match player.attack_frame {
+            Some(frame) => {
+                let b = player.hitbox;
+                let top_center = b.lo + Point::new((b.width() as i32) / 2, 0);
+                let attack: Rect = ATTACK_FRAMES[frame].into();
+                (attack + top_center).rotate(b.center(), player.facing_direction * 90)
+            }
+            None => Rect::default(),
+        };
     }
 }
 
 fn process_collisions(state: &mut State, player_id: EntityId) {
     if let Some(&player) = state.entities.get(player_id) {
-        let mut dead = false;
+        let mut dead = Vec::new();
+
         for (id, entity) in state.entities.iter() {
-            dead = id != player_id && entity.hitbox.has_intersection(player.hitbox);
-            if dead {
-                break;
+            if entity.kind == EntityKind::Monster {
+                // Monster hit player.
+                if entity.hitbox.has_intersection(player.hitbox)
+                    || entity.attack_box.has_intersection(player.hitbox)
+                {
+                    dead.push(player_id);
+                    break;
+                }
+
+                // Player hit moster.
+                if player.attack_box.has_intersection(entity.hitbox) {
+                    dead.push(id);
+                    break;
+                }
             }
         }
-        if dead {
-            state.entities.remove(player_id);
+
+        for id in dead {
+            state.entities.remove(id);
         }
     }
 }
@@ -65,16 +114,11 @@ fn render<T: RenderTarget>(canvas: &mut Canvas<T>, state: &State) -> Result<(), 
             let b = entity.hitbox;
             let w = 4;
             let face: Rect = (b.lo, (b.hi.x, b.lo.y + w)).into();
-            let face = face.rotate(b.center(), (entity.facing_direction as i32) * 90);
+            let face = face.rotate(b.center(), entity.facing_direction * 90);
             canvas.fill(face)?;
 
-            if entity.attack {
-                canvas.set_draw_color(Color::RGB(0, 0, 255));
-                let u = 8;
-                let face: Rect = ((b.lo.x, b.lo.y - u - 1), (b.hi.x, b.lo.y - 1)).into();
-                let face = face.rotate(b.center(), (entity.facing_direction as i32) * 90);
-                canvas.fill(face)?;
-            }
+            canvas.set_draw_color(Color::RGB(0, 0, 255));
+            canvas.fill(entity.attack_box)?;
         }
     }
 
@@ -97,7 +141,8 @@ fn main() -> Result<(), Error> {
         hitbox: Rect::new_with_size(400, 300, 32, 32),
         kind: EntityKind::Player,
         facing_direction: 0,
-        attack: false,
+        attack_frame: None,
+        attack_box: Rect::default(),
     });
 
     // Add monsters.
@@ -105,25 +150,29 @@ fn main() -> Result<(), Error> {
         hitbox: Rect::new_with_size(300, 200, 32, 32),
         kind: EntityKind::Monster,
         facing_direction: 0,
-        attack: false,
+        attack_frame: None,
+        attack_box: Rect::default(),
     });
     state.entities.insert(Entity {
         hitbox: Rect::new_with_size(500, 200, 32, 32),
         kind: EntityKind::Monster,
         facing_direction: 0,
-        attack: false,
+        attack_frame: None,
+        attack_box: Rect::default(),
     });
     state.entities.insert(Entity {
         hitbox: Rect::new_with_size(300, 400, 32, 32),
         kind: EntityKind::Monster,
         facing_direction: 0,
-        attack: false,
+        attack_frame: None,
+        attack_box: Rect::default(),
     });
     state.entities.insert(Entity {
         hitbox: Rect::new_with_size(500, 400, 32, 32),
         kind: EntityKind::Monster,
         facing_direction: 0,
-        attack: false,
+        attack_frame: None,
+        attack_box: Rect::default(),
     });
 
     canvas.set_draw_color(Color::RGB(0, 0, 0));

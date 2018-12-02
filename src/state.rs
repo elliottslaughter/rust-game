@@ -12,8 +12,9 @@ pub enum EntityKind {
 pub struct Entity {
     pub hitbox: Rect,
     pub kind: EntityKind,
-    pub facing_direction: i8, // 0/1/2/3 for up/left/down/right
-    pub attack: bool,
+    pub facing_direction: i32, // 0/1/2/3 for up/left/down/right
+    pub attack_frame: Option<usize>,
+    pub attack_box: Rect,
 }
 
 #[derive(Default)]

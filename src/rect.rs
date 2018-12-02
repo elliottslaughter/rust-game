@@ -1,4 +1,5 @@
 use std::cmp::{max, min};
+use std::ops::{Add, Sub};
 
 use crate::point::Point;
 
@@ -127,6 +128,22 @@ impl From<((i32, i32), Point)> for Rect {
     fn from(r: ((i32, i32), Point)) -> Rect {
         let lo: Point = r.0.into();
         (lo, r.1).into()
+    }
+}
+
+impl Add<Point> for Rect {
+    type Output = Rect;
+
+    fn add(self, other: Point) -> Rect {
+        Rect::new(self.lo + other, self.hi + other)
+    }
+}
+
+impl Sub<Point> for Rect {
+    type Output = Rect;
+
+    fn sub(self, other: Point) -> Rect {
+        Rect::new(self.lo - other, self.hi - other)
     }
 }
 
