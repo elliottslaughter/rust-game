@@ -7,7 +7,7 @@ use std::time::Duration;
 
 use game::control::{process_input, Control};
 use game::error::Error;
-use game::state::{Entity, EntityId, State};
+use game::state::{Entity, EntityId, EntityKind, State};
 
 fn process_action(state: &mut State, player_id: EntityId, control: &Control, window: &Window) {
     if let Some(player) = state.entities.get_mut(player_id) {
@@ -41,8 +41,11 @@ fn render<T: RenderTarget>(canvas: &mut Canvas<T>, state: &State) -> Result<(), 
     canvas.set_draw_color(Color::RGB(0, 0, 0));
     canvas.clear();
 
-    canvas.set_draw_color(Color::RGB(255, 255, 255));
     for entity in state.entities.values() {
+        match entity.kind {
+            EntityKind::Player => canvas.set_draw_color(Color::RGB(255, 255, 255)),
+            EntityKind::Monster => canvas.set_draw_color(Color::RGB(255, 0, 0)),
+        }
         canvas.fill_rect(entity.hitbox)?;
     }
 
@@ -63,20 +66,25 @@ fn main() -> Result<(), Error> {
     let mut state = State::default();
     let player_id = state.entities.insert(Entity {
         hitbox: Rect::new(400, 300, 32, 32),
+        kind: EntityKind::Player,
     });
 
     // Add monsters.
     state.entities.insert(Entity {
         hitbox: Rect::new(300, 200, 32, 32),
+        kind: EntityKind::Monster,
     });
     state.entities.insert(Entity {
         hitbox: Rect::new(500, 200, 32, 32),
+        kind: EntityKind::Monster,
     });
     state.entities.insert(Entity {
         hitbox: Rect::new(300, 400, 32, 32),
+        kind: EntityKind::Monster,
     });
     state.entities.insert(Entity {
         hitbox: Rect::new(500, 400, 32, 32),
+        kind: EntityKind::Monster,
     });
 
     canvas.set_draw_color(Color::RGB(0, 0, 0));
