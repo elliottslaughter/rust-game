@@ -109,6 +109,12 @@ impl From<((i32, i32), (i32, i32))> for Rect {
     }
 }
 
+impl From<(i32, i32, i32, i32)> for Rect {
+    fn from(r: (i32, i32, i32, i32)) -> Rect {
+        Rect::new_with_size(r.0, r.1, r.2, r.3)
+    }
+}
+
 impl From<((i32, i32), (u32, u32))> for Rect {
     fn from(r: ((i32, i32), (u32, u32))) -> Rect {
         let lo: Point = r.0.into();

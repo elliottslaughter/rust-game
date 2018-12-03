@@ -8,25 +8,18 @@ use game::point::Point;
 use game::rect::Rect;
 use game::state::{Entity, EntityId, EntityKind, State};
 
-static ATTACK_FRAMES: &'static [((i32, i32), (i32, i32))] = &[
-    ((12, -5), (16, -1)),
-    ((12, -6), (17, -1)),
-    ((11, -7), (17, -1)),
-    ((10, -9), (16, -2)),
-    ((8, -11), (15, -3)),
-    ((6, -12), (14, -3)),
-    ((4, -13), (13, -3)),
-    ((0, -14), (12, -3)),
-    ((-4, -14), (8, -3)),
-    ((-6, -13), (6, -3)),
-    ((-8, -12), (2, -2)),
-    ((-10, -11), (-2, -2)),
-    ((-11, -9), (-4, -1)),
-    ((-12, -7), (-6, -1)),
-    ((-13, -6), (-8, -1)),
-    ((-14, -5), (-10, -1)),
-    ((-15, -4), (-12, -1)),
-    ((-16, -3), (-14, -1)),
+static ATTACK_FRAMES: &'static [(i32, i32, i32, i32)] = &[
+    (12, -5, 4, 4),    // gap 0
+    (10, -6, 5, 5),    // gap 0
+    (8, -7, 6, 6),     // gap 0
+    (4, -13, 8, 10),   // gap 2
+    (0, -19, 8, 14),   // gap 4
+    (-4, -21, 8, 16),  // gap 4
+    (-8, -19, 8, 14),  // gap 4
+    (-12, -13, 8, 10), // gap 2
+    (-14, -7, 6, 6),   // gap 0
+    (-16, -6, 5, 5),   // gap 0
+    (-18, -5, 4, 4),   // gap 0
 ];
 
 fn process_action(state: &mut State, player_id: EntityId, control: &Control, window: Rect) {
@@ -124,7 +117,7 @@ fn render<T: RenderTarget>(canvas: &mut Canvas<T>, state: &State) -> Result<(), 
             let face = face.rotate(b.center(), entity.facing_direction * 90);
             canvas.fill(face)?;
 
-            canvas.set_draw_color(Color::RGB(0, 0, 255));
+            canvas.set_draw_color(Color::RGB(255, 255, 0));
             canvas.fill(entity.attack_box)?;
         }
     }
