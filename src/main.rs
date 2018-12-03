@@ -22,6 +22,28 @@ static ATTACK_FRAMES: &'static [(i32, i32, i32, i32)] = &[
     (-18, -5, 4, 4),   // gap 0
 ];
 
+fn process_scripts(state: &mut State, window: Rect) {
+    for (id, entity) in state.entities.iter_mut() {
+        if entity.kind == EntityKind::Monster {
+            let dir = entity.facing_direction;
+            let delta = Point::new(
+                if dir % 2 == 1 { dir-2 } else { 0 },
+                if dir % 2 == 0 { dir-1 } else { 0 },
+            );
+            let lo = window.grow(-entity.hitbox.size().x).clamp(entity.hitbox.lo + delta);
+            let hi = lo + entity.hitbox.size();
+            let hitbox = Rect::new(lo, hi);
+
+            // Turn when we hit an object.
+            if hitbox == entity.hitbox {
+                entity.facing_direction = (dir + 1) % 4;
+            }
+
+            entity.hitbox = hitbox;
+        }
+    }
+}
+
 fn process_action(state: &mut State, player_id: EntityId, control: &Control, window: Rect) {
     if let Some(player) = state.entities.get_mut(player_id) {
         let delta = Point::new(control.left_right_input, control.up_down_input) * 2;
@@ -156,21 +178,21 @@ fn main() -> Result<(), Error> {
     state.entities.insert(Entity {
         hitbox: Rect::new_with_size(500, 200, 32, 32),
         kind: EntityKind::Monster,
-        facing_direction: 0,
+        facing_direction: 1,
         attack_frame: None,
         attack_box: Rect::default(),
     });
     state.entities.insert(Entity {
         hitbox: Rect::new_with_size(300, 400, 32, 32),
         kind: EntityKind::Monster,
-        facing_direction: 0,
+        facing_direction: 2,
         attack_frame: None,
         attack_box: Rect::default(),
     });
     state.entities.insert(Entity {
         hitbox: Rect::new_with_size(500, 400, 32, 32),
         kind: EntityKind::Monster,
-        facing_direction: 0,
+        facing_direction: 3,
         attack_frame: None,
         attack_box: Rect::default(),
     });
@@ -188,6 +210,7 @@ fn main() -> Result<(), Error> {
 
         let size: Point = canvas.window().size().into();
         let rect = ((0, 0), size).into();
+        process_scripts(&mut state, rect);
         process_action(&mut state, player_id, &control, rect);
 
         process_collisions(&mut state, player_id);
