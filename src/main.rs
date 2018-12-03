@@ -26,7 +26,7 @@ fn process_action(state: &mut State, player_id: EntityId, control: &Control, win
     if let Some(player) = state.entities.get_mut(player_id) {
         let delta = Point::new(control.left_right_input, control.up_down_input);
         let lo = window.clamp(player.hitbox.lo + delta);
-        let hi = lo + player.hitbox.size() - 1;
+        let hi = lo + player.hitbox.size();
         player.hitbox = Rect::new(lo, hi);
 
         player.facing_direction = control.facing_input;
@@ -50,7 +50,7 @@ fn process_action(state: &mut State, player_id: EntityId, control: &Control, win
         player.attack_box = match player.attack_frame {
             Some(frame) => {
                 let b = player.hitbox;
-                let top_center = b.lo + Point::new((b.width() as i32) / 2, 0);
+                let top_center = b.index(0, -1);
                 let attack: Rect = ATTACK_FRAMES[frame].into();
                 (attack + top_center).rotate(b.center(), player.facing_direction * 90)
             }
@@ -113,7 +113,7 @@ fn render<T: RenderTarget>(canvas: &mut Canvas<T>, state: &State) -> Result<(), 
             canvas.set_draw_color(Color::RGB(0, 255, 0));
             let b = entity.hitbox;
             let w = 4;
-            let face: Rect = (b.lo, (b.hi.x, b.lo.y + w)).into();
+            let face: Rect = (b.index(-1, -1), b.index(1, -1) + (0, w)).into();
             let face = face.rotate(b.center(), entity.facing_direction * 90);
             canvas.fill(face)?;
 
@@ -187,7 +187,7 @@ fn main() -> Result<(), Error> {
         }
 
         let size: Point = canvas.window().size().into();
-        let rect = ((0, 0), size - 1).into();
+        let rect = ((0, 0), size).into();
         process_action(&mut state, player_id, &control, rect);
 
         process_collisions(&mut state, player_id);

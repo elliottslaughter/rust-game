@@ -58,6 +58,15 @@ impl Add<i32> for Point {
     }
 }
 
+impl Add<(i32, i32)> for Point {
+    type Output = Point;
+
+    fn add(self, other: (i32, i32)) -> Point {
+        let other: Point = other.into();
+        self + other
+    }
+}
+
 impl Sub for Point {
     type Output = Point;
 
@@ -74,6 +83,15 @@ impl Sub<i32> for Point {
 
     fn sub(self, other: i32) -> Point {
         self - Point::new(other, other)
+    }
+}
+
+impl Sub<(i32, i32)> for Point {
+    type Output = Point;
+
+    fn sub(self, other: (i32, i32)) -> Point {
+        let other: Point = other.into();
+        self - other
     }
 }
 
@@ -135,98 +153,34 @@ mod tests {
 
     #[test]
     fn point_rotate() {
-        assert_eq!(
-            Point::new(1, 0).rotate(Point::new(0, 0), 0),
-            Point::new(1, 0)
-        );
-        assert_eq!(
-            Point::new(0, 1).rotate(Point::new(0, 0), 0),
-            Point::new(0, 1)
-        );
-        assert_eq!(
-            Point::new(-1, 0).rotate(Point::new(0, 0), 0),
-            Point::new(-1, 0)
-        );
-        assert_eq!(
-            Point::new(0, -1).rotate(Point::new(0, 0), 0),
-            Point::new(0, -1)
-        );
+        let o1 = Point::new(0, 0);
+        assert_eq!(Point::new(1, 0).rotate(o1, 0), Point::new(1, 0));
+        assert_eq!(Point::new(0, 1).rotate(o1, 0), Point::new(0, 1));
+        assert_eq!(Point::new(-1, 0).rotate(o1, 0), Point::new(-1, 0));
+        assert_eq!(Point::new(0, -1).rotate(o1, 0), Point::new(0, -1));
 
-        assert_eq!(
-            Point::new(1, 0).rotate(Point::new(0, 0), 90),
-            Point::new(0, -1)
-        );
-        assert_eq!(
-            Point::new(0, 1).rotate(Point::new(0, 0), 90),
-            Point::new(1, 0)
-        );
-        assert_eq!(
-            Point::new(-1, 0).rotate(Point::new(0, 0), 90),
-            Point::new(0, 1)
-        );
-        assert_eq!(
-            Point::new(0, -1).rotate(Point::new(0, 0), 90),
-            Point::new(-1, 0)
-        );
+        assert_eq!(Point::new(1, 0).rotate(o1, 90), Point::new(0, -1));
+        assert_eq!(Point::new(0, 1).rotate(o1, 90), Point::new(1, 0));
+        assert_eq!(Point::new(-1, 0).rotate(o1, 90), Point::new(0, 1));
+        assert_eq!(Point::new(0, -1).rotate(o1, 90), Point::new(-1, 0));
 
-        assert_eq!(
-            Point::new(1, 0).rotate(Point::new(0, 0), 180),
-            Point::new(-1, 0)
-        );
-        assert_eq!(
-            Point::new(0, 1).rotate(Point::new(0, 0), 180),
-            Point::new(0, -1)
-        );
-        assert_eq!(
-            Point::new(-1, 0).rotate(Point::new(0, 0), 180),
-            Point::new(1, 0)
-        );
-        assert_eq!(
-            Point::new(0, -1).rotate(Point::new(0, 0), 180),
-            Point::new(0, 1)
-        );
+        assert_eq!(Point::new(1, 0).rotate(o1, 180), Point::new(-1, 0));
+        assert_eq!(Point::new(0, 1).rotate(o1, 180), Point::new(0, -1));
+        assert_eq!(Point::new(-1, 0).rotate(o1, 180), Point::new(1, 0));
+        assert_eq!(Point::new(0, -1).rotate(o1, 180), Point::new(0, 1));
 
-        assert_eq!(
-            Point::new(1, 0).rotate(Point::new(0, 0), 270),
-            Point::new(0, 1)
-        );
-        assert_eq!(
-            Point::new(0, 1).rotate(Point::new(0, 0), 270),
-            Point::new(-1, 0)
-        );
-        assert_eq!(
-            Point::new(-1, 0).rotate(Point::new(0, 0), 270),
-            Point::new(0, -1)
-        );
-        assert_eq!(
-            Point::new(0, -1).rotate(Point::new(0, 0), 270),
-            Point::new(1, 0)
-        );
+        assert_eq!(Point::new(1, 0).rotate(o1, 270), Point::new(0, 1));
+        assert_eq!(Point::new(0, 1).rotate(o1, 270), Point::new(-1, 0));
+        assert_eq!(Point::new(-1, 0).rotate(o1, 270), Point::new(0, -1));
+        assert_eq!(Point::new(0, -1).rotate(o1, 270), Point::new(1, 0));
 
-        assert_eq!(
-            Point::new(1, 2).rotate(Point::new(0, 0), 90),
-            Point::new(2, -1)
-        );
-        assert_eq!(
-            Point::new(-1, 2).rotate(Point::new(0, 0), 90),
-            Point::new(2, 1)
-        );
-        assert_eq!(
-            Point::new(-1, -2).rotate(Point::new(0, 0), 90),
-            Point::new(-2, 1)
-        );
-        assert_eq!(
-            Point::new(1, -2).rotate(Point::new(0, 0), 90),
-            Point::new(-2, -1)
-        );
+        assert_eq!(Point::new(1, 2).rotate(o1, 90), Point::new(2, -1));
+        assert_eq!(Point::new(-1, 2).rotate(o1, 90), Point::new(2, 1));
+        assert_eq!(Point::new(-1, -2).rotate(o1, 90), Point::new(-2, 1));
+        assert_eq!(Point::new(1, -2).rotate(o1, 90), Point::new(-2, -1));
 
-        assert_eq!(
-            Point::new(2, 3).rotate(Point::new(1, 1), 90),
-            Point::new(3, 0)
-        );
-        assert_eq!(
-            Point::new(-2, 3).rotate(Point::new(1, 1), 90),
-            Point::new(3, 4)
-        );
+        let o2 = Point::new(1, 1);
+        assert_eq!(Point::new(2, 3).rotate(o2, 90), Point::new(3, 0));
+        assert_eq!(Point::new(-2, 3).rotate(o2, 90), Point::new(3, 4));
     }
 }
