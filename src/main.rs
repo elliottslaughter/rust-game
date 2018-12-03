@@ -24,7 +24,7 @@ static ATTACK_FRAMES: &'static [(i32, i32, i32, i32)] = &[
 
 fn process_action(state: &mut State, player_id: EntityId, control: &Control, window: Rect) {
     if let Some(player) = state.entities.get_mut(player_id) {
-        let delta = Point::new(control.left_right_input, control.up_down_input);
+        let delta = Point::new(control.left_right_input, control.up_down_input) * 2;
         let lo = window.grow(-player.hitbox.size().x).clamp(player.hitbox.lo + delta);
         let hi = lo + player.hitbox.size();
         player.hitbox = Rect::new(lo, hi);
