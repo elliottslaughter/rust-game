@@ -15,6 +15,8 @@ pub struct Entity {
     pub facing_direction: i32, // 0/1/2/3 for up/left/down/right
     pub attack_frame: Option<usize>,
     pub attack_box: Rect,
+    pub agro: i32,
+    pub score: i32,
 }
 
 #[derive(Default)]

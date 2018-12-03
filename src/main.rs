@@ -22,14 +22,26 @@ static ATTACK_FRAMES: &'static [(i32, i32, i32, i32)] = &[
     (-18, -5, 4, 4),   // gap 0
 ];
 
-fn process_scripts(state: &mut State, window: Rect, frame_number: u64) {
+fn process_scripts(state: &mut State, player_id: EntityId, window: Rect, frame_number: u64) {
+    let player_hitbox = state.entities.get_mut(player_id).map(|player| player.hitbox);
     for entity in state.entities.values_mut() {
         if entity.kind == EntityKind::Monster {
             let dir = entity.facing_direction;
-            let delta = Point::new(
-                if dir % 2 == 1 { dir-2 } else { 0 },
-                if dir % 2 == 0 { dir-1 } else { 0 },
-            );
+            let delta = if entity.agro < 320 {
+                Point::new(
+                    if dir % 2 == 1 { dir-2 } else { 0 },
+                    if dir % 2 == 0 { dir-1 } else { 0 },
+                )
+            } else if let Some(hitbox) = player_hitbox {
+                let target = hitbox.center() - entity.hitbox.center();
+                if target.x.abs() > target.y.abs() {
+                    Point::new(target.x.signum(), 0)
+                } else {
+                    Point::new(0, target.y.signum())
+                }
+            } else {
+                Point::new(0, 0)
+            };
             let lo = window.grow(-entity.hitbox.size().x).clamp(entity.hitbox.lo + delta);
             let hi = lo + entity.hitbox.size();
             let hitbox = Rect::new(lo, hi);
@@ -40,6 +52,8 @@ fn process_scripts(state: &mut State, window: Rect, frame_number: u64) {
             }
 
             entity.hitbox = hitbox;
+
+            entity.agro += 1;
         }
     }
 
@@ -55,6 +69,8 @@ fn process_scripts(state: &mut State, window: Rect, frame_number: u64) {
             facing_direction: ((frame_number % 17) % 4) as i32,
             attack_frame: None,
             attack_box: Rect::default(),
+            agro: 0,
+            score: 0,
         });
     }
 }
@@ -97,7 +113,8 @@ fn process_action(state: &mut State, player_id: EntityId, control: &Control, win
 }
 
 fn process_collisions(state: &mut State, player_id: EntityId) {
-    if let Some(&player) = state.entities.get(player_id) {
+    let mut score = 0;
+    if let Some(player) = state.entities.get(player_id) {
         let mut dead = Vec::new();
 
         for (id, entity) in state.entities.iter() {
@@ -113,6 +130,7 @@ fn process_collisions(state: &mut State, player_id: EntityId) {
                 // Player hit moster.
                 if player.attack_box.has_intersection(entity.hitbox) {
                     dead.push(id);
+                    score += 1;
                     break;
                 }
             }
@@ -120,6 +138,13 @@ fn process_collisions(state: &mut State, player_id: EntityId) {
 
         for id in dead {
             state.entities.remove(id);
+        }
+    }
+
+    if let Some(player) = state.entities.get_mut(player_id) {
+        player.score += score;
+        if score > 0 {
+            println!("score: {}", player.score);
         }
     }
 }
@@ -180,6 +205,8 @@ fn main() -> Result<(), Error> {
         facing_direction: 0,
         attack_frame: None,
         attack_box: Rect::default(),
+        agro: 0,
+        score: 0,
     });
 
     // Add monsters.
@@ -189,6 +216,8 @@ fn main() -> Result<(), Error> {
         facing_direction: 0,
         attack_frame: None,
         attack_box: Rect::default(),
+        agro: 0,
+        score: 0,
     });
     state.entities.insert(Entity {
         hitbox: Rect::new_with_size(500, 200, 32, 32),
@@ -196,6 +225,8 @@ fn main() -> Result<(), Error> {
         facing_direction: 1,
         attack_frame: None,
         attack_box: Rect::default(),
+        agro: 0,
+        score: 0,
     });
     state.entities.insert(Entity {
         hitbox: Rect::new_with_size(300, 400, 32, 32),
@@ -203,6 +234,8 @@ fn main() -> Result<(), Error> {
         facing_direction: 2,
         attack_frame: None,
         attack_box: Rect::default(),
+        agro: 0,
+        score: 0,
     });
     state.entities.insert(Entity {
         hitbox: Rect::new_with_size(500, 400, 32, 32),
@@ -210,6 +243,8 @@ fn main() -> Result<(), Error> {
         facing_direction: 3,
         attack_frame: None,
         attack_box: Rect::default(),
+        agro: 0,
+        score: 0,
     });
 
     canvas.set_draw_color(Color::RGB(0, 0, 0));
@@ -226,7 +261,7 @@ fn main() -> Result<(), Error> {
 
         let size: Point = canvas.window().size().into();
         let rect = ((0, 0), size).into();
-        process_scripts(&mut state, rect, frame_number);
+        process_scripts(&mut state, player_id, rect, frame_number);
         process_action(&mut state, player_id, &control, rect);
 
         process_collisions(&mut state, player_id);
