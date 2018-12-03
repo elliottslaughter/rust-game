@@ -86,28 +86,36 @@ pub fn process_input(event_pump: &mut EventPump, control: &mut Control) -> Resul
                     control.up_pressed = false;
                     if control.up_down_input == -1 {
                         control.up_down_input = 0;
-                        control.facing_input = control.left_right_input + 2;
+                        if control.left_right_input != 0 {
+                            control.facing_input = control.left_right_input + 2;
+                        }
                     }
                 }
                 Keycode::Down => {
                     control.down_pressed = false;
                     if control.up_down_input == 1 {
                         control.up_down_input = 0;
-                        control.facing_input = control.left_right_input + 2;
+                        if control.left_right_input != 0 {
+                            control.facing_input = control.left_right_input + 2;
+                        }
                     }
                 }
                 Keycode::Left => {
                     control.left_pressed = false;
                     if control.left_right_input == -1 {
                         control.left_right_input = 0;
-                        control.facing_input = control.up_down_input + 1;
+                        if control.up_down_input != 0 {
+                            control.facing_input = control.up_down_input + 1;
+                        }
                     }
                 }
                 Keycode::Right => {
                     control.right_pressed = false;
                     if control.left_right_input == 1 {
                         control.left_right_input = 0;
-                        control.facing_input = control.up_down_input + 1;
+                        if control.up_down_input != 0 {
+                            control.facing_input = control.up_down_input + 1;
+                        }
                     }
                 }
                 Keycode::Space => {
