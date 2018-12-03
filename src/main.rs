@@ -22,8 +22,8 @@ static ATTACK_FRAMES: &'static [(i32, i32, i32, i32)] = &[
     (-18, -5, 4, 4),   // gap 0
 ];
 
-fn process_scripts(state: &mut State, window: Rect) {
-    for (id, entity) in state.entities.iter_mut() {
+fn process_scripts(state: &mut State, window: Rect, frame_number: u64) {
+    for entity in state.entities.values_mut() {
         if entity.kind == EntityKind::Monster {
             let dir = entity.facing_direction;
             let delta = Point::new(
@@ -41,6 +41,21 @@ fn process_scripts(state: &mut State, window: Rect) {
 
             entity.hitbox = hitbox;
         }
+    }
+
+    if frame_number % 100 == 0 {
+        let dir = ((frame_number / 100) % 4) as i32;
+        state.entities.insert(Entity {
+            hitbox: Rect::new_with_size(
+                window.width() as i32 * ((dir + 1) % 2) + 400 * (dir - 2),
+                window.height() as i32 * (dir % 2) + 300 * (dir - 1),
+                32,
+                32),
+            kind: EntityKind::Monster,
+            facing_direction: ((frame_number % 17) % 4) as i32,
+            attack_frame: None,
+            attack_box: Rect::default(),
+        });
     }
 }
 
@@ -202,6 +217,7 @@ fn main() -> Result<(), Error> {
     canvas.present();
     let mut event_pump = sdl_context.event_pump()?;
     let mut control = Control::default();
+    let mut frame_number: u64 = 0;
     loop {
         process_input(&mut event_pump, &mut control)?;
         if control.quit_input {
@@ -210,7 +226,7 @@ fn main() -> Result<(), Error> {
 
         let size: Point = canvas.window().size().into();
         let rect = ((0, 0), size).into();
-        process_scripts(&mut state, rect);
+        process_scripts(&mut state, rect, frame_number);
         process_action(&mut state, player_id, &control, rect);
 
         process_collisions(&mut state, player_id);
@@ -219,6 +235,7 @@ fn main() -> Result<(), Error> {
 
         canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+        frame_number += 1;
     }
     Ok(())
 }
