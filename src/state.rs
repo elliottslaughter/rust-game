@@ -6,6 +6,7 @@ pub type EntityId = slotmap::DefaultKey;
 pub enum EntityKind {
     Player,
     Monster,
+    Power,
 }
 
 #[derive(Copy, Clone)]
@@ -17,6 +18,7 @@ pub struct Entity {
     pub attack_box: Rect,
     pub agro: i32,
     pub score: i32,
+    pub power: i32,
 }
 
 #[derive(Default)]
