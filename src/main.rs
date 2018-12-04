@@ -27,17 +27,18 @@ fn process_scripts(state: &mut State, player_id: EntityId, window: Rect, frame_n
     for entity in state.entities.values_mut() {
         if entity.kind == EntityKind::Monster {
             let dir = entity.facing_direction;
-            let delta = if entity.agro < 320 {
+            let delta = if entity.agro < 240 {
                 Point::new(
                     if dir % 2 == 1 { dir-2 } else { 0 },
                     if dir % 2 == 0 { dir-1 } else { 0 },
                 )
             } else if let Some(hitbox) = player_hitbox {
+                let factor = entity.agro / 320;
                 let target = hitbox.center() - entity.hitbox.center();
                 if target.x.abs() > target.y.abs() {
-                    Point::new(target.x.signum(), 0)
+                    Point::new(target.x.signum(), 0) * factor
                 } else {
-                    Point::new(0, target.y.signum())
+                    Point::new(0, target.y.signum()) * factor
                 }
             } else {
                 Point::new(0, 0)
